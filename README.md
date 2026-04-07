@@ -2,6 +2,8 @@
 
 Python-only facial landmark fitting on still images using the original [clmtrackr](https://github.com/auduno/clmtrackr) model.
 
+![tracked face](examples/franck_landmarks.jpg)
+
 This repository has been cleaned down to the Python implementation. The browser JavaScript library, HTML demos, generated builds, and Node tooling have been removed. The default model is now packaged as JSON at `pyclmtrackr/data/model_pca_20_svm.json`.
 
 ## What It Does
