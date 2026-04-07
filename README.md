@@ -4,7 +4,7 @@ Python-only facial landmark fitting on still images using the original [clmtrack
 
 ![tracked face](examples/franck_landmarks.jpg)
 
-This repository has been cleaned down to the Python implementation. The browser JavaScript library, HTML demos, generated builds, and Node tooling have been removed. The default model is now packaged as JSON at `pyclmtrackr/data/model_pca_20_svm.json`.
+This repository has been cleaned down to the Python implementation. The browser JavaScript library, HTML demos, generated builds, and Node tooling have been removed. The default model is now packaged as JSON at [`pyclmtrackr/data/model_pca_20_svm.json`](https://github.com/Vini2/pyclmtrackr/blob/dev/pyclmtrackr/data/model_pca_20_svm.json).
 
 ## What It Does
 
@@ -91,4 +91,4 @@ For visual comparisons, make sure you run the fitter on the exact same image dim
 
 This is intentionally not a full port of the original browser/video tracker. It focuses on fitting the facial model to still images in Python.
 
-The original clmtrackr project was distributed under the MIT License; keep `LICENSE.txt` with redistributed copies.
+The original clmtrackr project was distributed under the MIT License; keep [`LICENSE.txt`](https://github.com/auduno/clmtrackr/blob/dev/LICENSE.txt) with redistributed copies.
