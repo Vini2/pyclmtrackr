@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyclmtrackr"
+version = "0.1.0"
+description = "Python-only still-image facial landmark fitting using the clmtrackr PCA/SVM model"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE.txt" }
+dependencies = [
+  "numpy>=1.24",
+  "opencv-python>=4.8",
+]
+
+[tool.setuptools.packages.find]
+include = ["pyclmtrackr*"]
+
+[tool.setuptools.package-data]
+pyclmtrackr = ["data/*.json"]

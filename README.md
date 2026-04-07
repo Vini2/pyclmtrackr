@@ -1,96 +1,92 @@
-clmtrackr
-======
+# pyclmtrackr
 
-[![npm version](https://img.shields.io/npm/v/clmtrackr.svg)](https://www.npmjs.com/package/clmtrackr)
+Python-only facial landmark fitting on still images using the original [clmtrackr](https://github.com/auduno/clmtrackr) model.
 
-![tracked face](https://auduno.github.io/clmtrackr/examples/media/clmtrackr_03.jpg)
+This repository has been cleaned down to the Python implementation. The browser JavaScript library, HTML demos, generated builds, and Node tooling have been removed. The default model is now packaged as JSON at `pyclmtrackr/data/model_pca_20_svm.json`.
 
-**clmtrackr** is a javascript library for fitting facial models to faces in videos or images. It currently is an implementation of *constrained local models* fitted by *regularized landmark mean-shift*, as described in [Jason M. Saragih's paper](http://dl.acm.org/citation.cfm?id=1938021). **clmtrackr** tracks a face and outputs the coordinate positions of the face model as an array, following the numbering of the model below:
+## What It Does
 
-[![facemodel_numbering](https://auduno.github.io/clmtrackr/examples/media/facemodel_numbering_new_small.png)](https://auduno.github.io/clmtrackr/examples/media/facemodel_numbering_new.png)
+`pyclmtrackr` fits a 71-point clmtrackr facial model to still images:
 
-[Reference](http://auduno.github.io/clmtrackr/docs/reference.html) - [Overview](https://www.auduno.com/2014/01/05/fitting-faces/)
+- Detects an initial frontal face box with OpenCV.
+- Refines initialization using detected eyes when possible.
+- Runs the CLM/SVM patch-response fitting loop in Python.
+- Returns landmarks as a NumPy array shaped `(71, 2)`.
+- Can write JSON landmarks and an overlay image from the CLI.
 
-The library provides some generic face models that were trained on [the MUCT database](http://www.milbo.org/muct/) and some additional self-annotated images. Check out [clmtools](https://github.com/auduno/clmtools) for building your own models.
+## Install
 
-For tracking in video, it is recommended to use a browser with WebGL support, though the library should work on any modern browser.
-
-For some more information about Constrained Local Models, take a look at Xiaoguang Yan's [excellent tutorial](https://sites.google.com/site/xgyanhome/home/projects/clm-implementation/ConstrainedLocalModel-tutorial%2Cv0.7.pdf?attredirects=0), which was of great help in implementing this library.
-
-### Examples ###
-
-* [Tracking in image](https://auduno.github.io/clmtrackr/examples/clm_image.html)
-* [Tracking in video](https://auduno.github.io/clmtrackr/examples/clm_video.html)
-* [Face substitution](https://auduno.github.io/clmtrackr/examples/facesubstitution.html)
-* [Face masking](https://auduno.github.io/clmtrackr/examples/face_mask.html)
-* [Realtime face deformation](https://auduno.github.io/clmtrackr/examples/facedeform.html)
-* [Emotion detection](https://auduno.github.io/clmtrackr/examples/clm_emotiondetection.html)
-* [Caricature](https://auduno.github.io/clmtrackr/examples/caricature.html)
-
-### Usage ###
-
-Download the minified library [clmtrackr.js](https://github.com/auduno/clmtrackr/raw/dev/build/clmtrackr.js), and include it in your webpage.
-
-```html
-/* clmtrackr libraries */
-<script src="js/clmtrackr.js"></script>
+```bash
+python3 -m pip install -r requirements.txt
 ```
 
-The following code initiates the clmtrackr with the default model (see the [reference](http://auduno.github.io/clmtrackr/docs/reference.html) for some alternative models), and starts the tracker running on a video element.
+If your default `python3` does not include `pip` or OpenCV, use the Python environment where `numpy` and `opencv-python` are installed.
 
-```html
-<video id="inputVideo" width="400" height="300" autoplay loop>
-  <source src="./media/somevideo.ogv" type="video/ogg"/>
-</video>
-<script type="text/javascript">
-  var videoInput = document.getElementById('inputVideo');
-  
-  var ctracker = new clm.tracker();
-  ctracker.init();
-  ctracker.start(videoInput);
-</script>
+## Command Line
+
+```bash
+python3 -m pyclmtrackr examples/franck_02159.jpg \
+  --output /tmp/franck_landmarks.jpg \
+  --json /tmp/franck_landmarks.json
 ```
 
-You can now get the positions of the tracked facial features as an array via ```getCurrentPosition()```:
+If automatic detection misses the face, pass a manual face box:
 
-```html
-<script type="text/javascript">
-  function positionLoop() {
-    requestAnimationFrame(positionLoop);
-    var positions = ctracker.getCurrentPosition();
-    // positions = [[x_0, y_0], [x_1,y_1], ... ]
-    // do something with the positions ...
-  }
-  positionLoop();
-</script>
+```bash
+python3 -m pyclmtrackr face.jpg --bbox 120 80 240 240 --json landmarks.json
 ```
 
-You can also use the built in function ```draw()``` to draw the tracked facial model on a canvas :
+The box format is:
 
-```html
-<canvas id="drawCanvas" width="400" height="300"></canvas>
-<script type="text/javascript">
-  var canvasInput = document.getElementById('drawCanvas');
-  var cc = canvasInput.getContext('2d');
-  function drawLoop() {
-    requestAnimationFrame(drawLoop);
-    cc.clearRect(0, 0, canvasInput.width, canvasInput.height);
-    ctracker.draw(canvasInput);
-  }
-  drawLoop();
-</script>
+```text
+x y width height
 ```
 
-See the complete example [here](https://auduno.github.io/clmtrackr/examples/example.html).
+## Python API
 
-### Development ###
+```python
+import cv2
+from pyclmtrackr import CLMTracker
 
-First, install [node.js](http://nodejs.org/) with npm.
+tracker = CLMTracker()
+result = tracker.fit("examples/franck_02159.jpg")
 
-In the root directory of clmtrackr, run `npm install` then run `npm run build`. This will create `clmtrackr.js` and `clmtrackr.module.js` in `build` folder.
+print(result.points.shape)  # (71, 2)
+print(result.points[62])    # Nose landmark
 
-To test the examples locally, you need to run a local server. One easy way to do this is to install `http-server`, a small node.js utility: `npm install -g http-server`. Then run `http-server` in the root of clmtrackr and go to `https://localhost:8080/examples` in your browser.
+overlay = tracker.draw("examples/franck_02159.jpg", result)
+cv2.imwrite("/tmp/franck_landmarks.jpg", overlay)
+```
 
-### License ###
+Manual face box:
 
-**clmtrackr** is distributed under the [MIT License](http://www.opensource.org/licenses/MIT)
+```python
+result = tracker.fit("face.jpg", bbox=(120, 80, 240, 240))
+```
+
+For visual comparisons, make sure you run the fitter on the exact same image dimensions as the reference overlay. The original clmtrackr demo images are often cropped/resized, so overlay coordinates from `examples/franck_02159.jpg` will not line up pixel-for-pixel with the old `clmtrackr_03.jpg` README figure.
+
+## Project Layout
+
+```text
+.
+├── LICENSE.txt
+├── README.md
+├── pyproject.toml
+├── requirements.txt
+├── examples/
+│   └── franck_02159.jpg
+└── pyclmtrackr/
+    ├── __init__.py
+    ├── __main__.py
+    ├── model.py
+    ├── tracker.py
+    └── data/
+        └── model_pca_20_svm.json
+```
+
+## Notes
+
+This is intentionally not a full port of the original browser/video tracker. It focuses on fitting the facial model to still images in Python.
+
+The original clmtrackr project was distributed under the MIT License; keep `LICENSE.txt` with redistributed copies.
